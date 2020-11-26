@@ -1,0 +1,10 @@
+---
+path: /droplets/ID
+verb: get
+replace:
+  - string: ID
+    env_var: ID
+preflight:
+  env_variables:
+    - name: ID
+      desc: A Droplet ID such as 12345678

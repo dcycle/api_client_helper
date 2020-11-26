@@ -1,0 +1,12 @@
+---
+base: https://cloud.acquia.com/api
+auth_base: https://accounts.acquia.com/api
+token: token
+url: https://docs.acquia.com/cloud-platform/develop/api/
+authenticator: oauth2
+preflight:
+  env_variables:
+    - name: KEY
+      desc: Obtained from your account on the Acquia dashboard.
+    - name: SECRET
+      desc: Obtained from your account on the Acquia dashboard.

@@ -1,0 +1,16 @@
+---
+path: /environments/ENVID/code/actions/switch
+successcode: 202
+replace:
+  - string: ENVID
+    env_var: ENVID
+verb: post
+body:
+  - name: branch
+    env_var: BRANCH
+preflight:
+  env_variables:
+    - name: ENVID
+      desc: An environment ID.
+    - name: BRANCH
+      desc: A branch.

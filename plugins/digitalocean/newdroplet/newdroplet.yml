@@ -1,0 +1,26 @@
+---
+path: /droplets
+verb: post
+body:
+  - name: name
+    env_var: NAME
+  - name: region
+    env_var: LOCATION
+  - name: size
+    env_var: SIZE
+  - name: image
+    env_var: IMAGE
+  - name: ssh_keys
+    env_var: SSH_FINGERPRINT
+preflight:
+  env_variables:
+    - name: NAME
+      desc: A name such as my-first-new-droplet.
+    - name: LOCATION
+      desc: A location such as nyc3
+    - name: SIZE
+      desc: A size such as 512mb or 8gb
+    - name: IMAGE
+      desc: An image such as docker-18-04 or coreos-stable
+    - name: SSH_FINGERPRINT
+      desc: The ssh fingerprint of the ssh key you want to add to the vm, should look like a1:b2:c3:d4:a1:b2:c3:d4:a1:b2:c3:d4:a1:b2:c3:d4

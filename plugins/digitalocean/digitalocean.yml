@@ -1,0 +1,9 @@
+---
+base: https://api.digitalocean.com/v2
+token: token
+url: https://developers.digitalocean.com/documentation/v2/
+authenticator: header_bearer
+preflight:
+  env_variables:
+    - name: TOKEN
+      desc: your DigitalOcean token, should look like abc123abc123abc123abc123abc123
