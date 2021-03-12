@@ -1,0 +1,9 @@
+---
+response:
+  hello:
+  - response: hello
+    valid: 0
+  - response: world
+    valid: 1
+  - response: "another invalid response"
+    valid: 0

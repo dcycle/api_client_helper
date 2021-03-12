@@ -1,6 +1,8 @@
 API Client Helper
 =====
 
+[![CircleCI](https://circleci.com/gh/dcycle/api_client_helper/tree/master.svg?style=svg)](https://circleci.com/gh/dcycle/api_client_helper/tree/master)
+
 Interact with various APIs in Python.
 
 This project currently has plugins for
@@ -10,13 +12,67 @@ This project currently has plugins for
 
 Each plugin is in its ./plugins/* folder, for example ./plugins/acquia or ./plugins/digitalocean, and you can copy-paste those as starters for your own plugins.
 
+Documentation specific to each plugin can be found in each plugin's README.md document, for example `./plugins/digitalocean/README.md`.
+
+This project is meant to ube used as a starterkit for your own API needs.
+
 How to use with Docker
 -----
+
+This project defines "providers" such as DigitalOcean, which are in the `./plugins` directory; and, for each provider, actions, as `./plugins/digitalocean/accountinfo/accountinfo.yml`. Please look at the YAML files within the `./plugins` directory and its subdirectories, as a basis for creating extra providers and actions.
+
+Feel free to submit pull requests if you feel your work might be of interest to other teams.
+
+One fo the providers in this project is `dummy`, and one of its actions is `dummy`. This provider and action is used simply to demonstrate how API Client Helper works.
+
+To run the dummy action on the dummy provider, you can run:
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy
+
+    {"hello": "world", "embedded": {"hello": "unicorns"}}
+
+To view pretty Json, you can run something like this:
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy | python -m json.tool
+
+    {
+        "embedded": {
+            "hello": "unicorns"
+        },
+        "hello": "world"
+    }
+
+You can use Jsonpath syntax to get only part of the response, like this:
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy \
+      --jsonpath=$.embedded
+
+    {"hello": "unicorns"}
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy \
+      --jsonpath=$.embedded.hello
+
+    ["unicorns"]
+
+To get the first item in an array:
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy \
+      --jsonpath=$.embedded.hello \
+      --jsondecodefirst=1
+
+    unicorns
+
+A real-world example
+-----
+
+This script defines interaction with the DigitalOcean API at `./plugins/digitalocean`, meaning that, assuming you have a valid DigitalOcean API token, you can run something like:
 
     TOKEN=my-api-token
     docker run --rm \
       --env TOKEN="$TOKEN" \
       dcycle/api_client_helper:1 digitalocean accountinfo
+
+    {"account": {"droplet_limit": 25, "floating_ip_limit": 3, "volume_limit": 100, "email": "admin@example.com", "uuid": "abc123", "email_verified": true, "status": "active", "status_message": ""}}
 
 To create a new DigitalOcean droplet (virtual machine):
 
@@ -33,129 +89,237 @@ To create a new DigitalOcean droplet (virtual machine):
       --env NAME="$NAME" \
       --env IMAGE="$IMAGE" \
       --env SSH_FINGERPRINT="$SSH_FINGERPRINT" \
-      --env DEBUG=1 \
       dcycle/api_client_helper:1 digitalocean newdroplet
 
-To get info about a DigitalOcean droplet with its ID:
+    {"droplet": {"id": 236335349, "name": "some-new-droplet", "memory": 8192, "vcpus": 4.....
 
-    ID=1234567
-    TOKEN=my-api-token
+This will create a new droplet with ID 236335349 (in this example), but it will not yet be available for use. That might take up to a minute; we need to poll the dropletinfo API endpoint until it's ready ("active", not "new").
+
+**Here is how to do it manually; read on for an automated way to have the script do it for you.**
+
+Assuming your TOKEN environment variable is still set, you can get information about your droplet by running:
+
+    ID=236335349
     docker run --rm \
       --env TOKEN="$TOKEN" \
       --env ID="$ID" \
       dcycle/api_client_helper:1 digitalocean dropletinfo
 
-To get info about all DigitalOcean droplets:
+This will give you a lot of information; but what we are looking for is the active status, which can be isolated using Jsonpath:
 
-    TOKEN=my-api-token
-    docker run --rm \
-      --env TOKEN="$TOKEN" \
-      dcycle/api_client_helper:1 digitalocean listdroplets
-
-To delete a DigitalOcean droplet with its ID:
-
-    ID=1234567
-    TOKEN=my-api-token
     docker run --rm \
       --env TOKEN="$TOKEN" \
       --env ID="$ID" \
-      dcycle/api_client_helper:1 digitalocean deletedroplet
+      dcycle/api_client_helper:1 digitalocean dropletinfo \
+      --jsonpath=$.droplet.status \
+      --jsondecodefirst=1
 
-To get your Acquia account info:
+    active
 
-    KEY=my-api-key
-    SECRET=my-api-secret
+We will call this a multi-step request:
+
+* First, create a Droplet
+* Next, wait for the droplet to be active
+
+To further automate this, see the "Multi-step Requests" section, below.
+
+How to use without Docker
+-----
+
+Start by running the same pip3 install commands as in the `Dockerfile`.
+
+Then:
+
+    sudo pip3 install requests pyyaml deepmerge jsonpath-ng
+    export TOKEN=my-api-token
+    python3 ./api_client_helper.py dummy dummy
+
+Multi-step Requests
+-----
+
+Coming back to our "create a Droplet" example, above, several APIs have this behaviour:
+
+* Make a request
+* Keep polling the API every second until the request is fulfilled
+* Fail after a minute or so
+
+You can define your own multi-step requests. This script provides a dummy example:
+
+    docker run --rm dcycle/api_client_helper:1 dummy multistep
+
+    {"hello": "world", "embedded": {"hello": "unicorns"}}
+
+This example actually calls the dummy action four times and is defined in `./plugins/multistep/mutistep/multistep.yml`.
+
+You can see what's going on by using the debug flag as described in the "Debugging" section, below:
+
     docker run --rm \
-      --env KEY="$KEY" \
-      --env SECRET="$SECRET" \
-      dcycle/api_client_helper:1 acquia accountinfo
+      --env DEBUG=1 \
+      dcycle/api_client_helper:1 dummy multistep
 
-To switch the code on an Acquia environment:
+    [DEBUG] message
+    [DEBUG] ===> STEP 0
+    [DEBUG] message
+    [DEBUG] Try 0 of 90
+    [DEBUG] multistep
+    [DEBUG] Success, moving to next step
+    [DEBUG] message
+    [DEBUG] ===> STEP 1
+    [DEBUG] message
+    [DEBUG] Try 0 of 90
+    [DEBUG] multistep
+    [DEBUG] Success, moving to next step
+    [DEBUG] message
+    [DEBUG] ===> STEP 2
+    [DEBUG] message
+    [DEBUG] Try 0 of 90
+    [DEBUG] multistep
+    [DEBUG] Success, moving to next step
+    [DEBUG] message
+    [DEBUG] ===> STEP 3
+    [DEBUG] message
+    [DEBUG] Try 0 of 90
+    [DEBUG] multistep
+    [DEBUG] Success, moving to next step
+    [DEBUG] multistep
+    [DEBUG] Multistep action succeeded
+    {"hello": "world", "embedded": {"hello": "unicorns"}}
 
-  TAG=my-application-tag
-  KEY=my-api-key
-  SECRET=my-api-secret
-  ENVID=my-environment
-  BRANCH=tags/"$TAG"
-  docker run --rm \
-    --env KEY="$KEY" \
-    --env SECRET="$SECRET" \
-    --env ENVID="$ENVID" \
-    --env BRANCH="$BRANCH" \
-    dcycle/api_client_helper:1 acquia switch
+We ship with a multistep "create a DigitalOcean Droplet" action, which you can run by:
+
+    TOKEN=my-api-token
+    LOCATION=nyc3
+    SIZE=8gb
+    NAME=some-new-droplet
+    IMAGE=docker-18-04
+    SSH_FINGERPRINT=a1:b2:c3:d4:a1:b2:c3:d4:a1:b2:c3:d4:a1:b2:c3:d4
+    time docker run --rm \
+      --env DEBUG="1" \
+      --env TOKEN="$TOKEN" \
+      --env LOCATION="$LOCATION" \
+      --env SIZE="$SIZE" \
+      --env NAME="$NAME" \
+      --env IMAGE="$IMAGE" \
+      --env SSH_FINGERPRINT="$SSH_FINGERPRINT" \
+      dcycle/api_client_helper:1 digitalocean newdroplet_and_wait \
+      --jsonpath='$.droplet.networks.v4[?(@.type = "public")].ip_address'
+
+    [DEBUG] A bunch of debug messages...
+    ["1.2.3.4"]
+
+    real	0m35.167s
+    user	0m0.130s
+    sys	0m0.062s
+
+Run it witout `--env DEBUG="1"` and with `--jsondecodefirst=1` to get just the IP address.
+
+More DigitalOcean requests can be found in `./plugins/digitalocean/README.md`.
+
+Errors
+-----
+
+In case of an error you'll get information about the error and a non-zero exit code.
+
+Developers
+-----
+
+### Testing Individual Files
+
+This project contains a number of files starting with `test_`, for example `test_my_jsonpath.py`.
+
+To test these files you can run (for example):
+
+    docker run --rm --entrypoint python3 dcycle/api_client_helper:1 test_my_jsonpath.py
+
+Working with Json and Jsonpath
+-----
+
+By default the command will output the json result as a string. Let's use the "dummy" provider's "dummy" action to confirm this:
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy
+    {"hello": "world", "embedded": {"hello": "unicorns"}}
+
+You can then format this using whatever method you like, for example:
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy | python -m json.tool
+    {
+        "embedded": {
+            "hello": "unicorns"
+        },
+        "hello": "world"
+    }
+
+You can also [the JsonPath syntax](https://jsonpath.com) to further dig through your document. The dollar sign is equal to your entire document, so the following are equivalent:
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy
+    {"hello": "world", "embedded": {"hello": "unicorns"}}
+    docker run --rm dcycle/api_client_helper:1 dummy dummy --jsonpath=$
+    {"hello": "world", "embedded": {"hello": "unicorns"}}
+
+However, if you just want to print the word "unicorns", you can use the jsonpath `$.embedded.hello`:
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy --jsonpath=$.embedded.hello
+    "unicorns"
+
+You can use `--jsondecodefirst=1` to decode the json (in this case remove the quotes from the word "unicorn"):
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy --jsonpath=$.embedded.hello --jsondecodefirst=1
+    unicorns
+
+(If you use `--jsondecodefirst=1` with an object, you will end up with a non-json string which is not of much use.)
+
+More Json and Jsonpath examples
+-----
+
+Consider the following output:
+
+    docker run --rm dcycle/api_client_helper:1 dummy jsonpath_example | python -m json.tool
+    {
+        "hello": [
+            {
+                "response": "hello",
+                "valid": 0
+            },
+            {
+                "response": "world",
+                "valid": 1
+            },
+            {
+                "response": "another invalid response",
+                "valid": 0
+            }
+        ]
+    }
+
+Let's say I want to get the string "world", I need to _filter_ the response of "hello" by "valid = 1". Here is how to do it to output only the string "world":
+
+    docker run --rm dcycle/api_client_helper:1 \
+      dummy jsonpath_example \
+      --jsonpath='$.hello[?(@.valid=1)].response' \
+      --jsondecodefirst=1
+
+This will output "world".
+
+    docker run --rm dcycle/api_client_helper:1 \
+      dummy jsonpath_example \
+      --jsonpath='$.hello[?(@.valid=0)].response' \
+      --jsondecodefirst=1
 
 Debugging
 -----
 
 If you set the DEBUG environment variable to 1, you will see debug info:
 
-    TOKEN=my-api-token
     docker run --rm \
-      --env TOKEN="$TOKEN" \
       --env DEBUG=1 \
-      dcycle/api_client_helper:1 digitalocean accountinfo
+      dcycle/api_client_helper:1 dummy multistep
 
-
-
-
-    KEY=my-api-key
-    SECRET=my-api-secret
-
-
-    docker run --rm \
-      --env KEY="$KEY" \
-      --env SECRET="$SECRET" \
-      --entrypoint /bin/bash \
-      dcycle/api_client_helper:1 -c 'python3 ./acquia_api_test.py'
-
-  KEY=my-api-key
-  SECRET=my-api-secret
-  ORG_UUID=my-org-uuid
-  docker run --rm \
-    --env KEY="$KEY" \
-    --env SECRET="$SECRET" \
-    --env ORG_UUID="$ORG_UUID" \
-    --entrypoint /bin/bash \
-    dcycle/api_client_helper:1 -c 'python3 ./acquia_api_test.py'
-
-
-
-
-    ENV=my-first-vm
-    TOKEN=my-api-token
-    TOKEN=my-api-token
-    SSH_FINGERPRINT=my-ssh-fingerprint
-    REGION=nyc3
-    SIZE=8gb
-    IMAGE=docker-18-04
-    docker run --rm \
-      --env NAME="$NAME" \
-      --env TOKEN="$TOKEN" \
-      --env SSH_FINGERPRINT="$SSH_FINGERPRINT" \
-      --env REGION="$LOCATION" \
-      --env IMAGE="$IMAGE" \
-      --env SIZE="$SIZE" \
-      dcycle/api_client_helper:1 digitalocean accountinfo
-
-How to use without Docker
------
-
-Start by running the same pip3 install commands as in the Dockerfile.
-
-Then:
-
-    export NAME=my-first-vm
-    export TOKEN=my-api-token
-    export SSH_FINGERPRINT=my-ssh-fingerprint
-    python3 ./vm.py --provider digitalocean --action create
-
-
-Deveolopment
+Local deveolopment
 -----
 
 Share the volument using `-v $(pwd):/usr/src/app`:
 
 TOKEN=my-api-token
-docker run -v $(pwd):/usr/src/app --rm \
+docker run -v "$(pwd)":/usr/src/app --rm \
   --env TOKEN="$TOKEN" \
   dcycle/api_client_helper:1 digitalocean accountinfo

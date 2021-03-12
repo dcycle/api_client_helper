@@ -2,7 +2,7 @@
 path: /droplets/ID
 verb: delete
 successcode: 204
-expectingContent: 0
+expecting_content: 0
 replace:
   - string: ID
     env_var: ID

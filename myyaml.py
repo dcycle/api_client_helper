@@ -1,24 +1,38 @@
 '''Interact with one provider, performing an action on it.'''
 
-import yaml
 import os
 import sys
+# pylint: disable=E0401
+import yaml
 import deepmerge
 
-myyaml = sys.modules[__name__]
+MYYAML = sys.modules[__name__]
 
-def loadFile(file):
+def load_file(file):
+    '''
+    Load a YAML file.
+    '''
     with open(os.getcwd() + '/plugins/' + file + '.yml', 'r') as stream:
-        return(yaml.safe_load(stream))
+        return yaml.safe_load(stream)
 
-def loadProvider(provider):
-    return myyaml.loadFile(provider + '/' + provider);
+def load_provider(provider):
+    '''
+    Load a provider's YAML file.
+    '''
+    return MYYAML.load_file(provider + '/' + provider)
 
-def loadAction(provider, action):
+def load_action(provider, action):
+    '''
+    Load an action file for a given provider.
+    '''
     if action == '':
         return {}
-    return myyaml.loadFile(provider + '/' + action + '/' + action);
+    return MYYAML.load_file(provider + '/' + action + '/' + action)
 
-def load(provider, action = ''):
-    ret = deepmerge.merge(myyaml.loadProvider(provider), myyaml.loadAction(provider, action))
+def load(provider, action=''):
+    '''
+    Load YAML files for a provider and optionally its action, then
+    merge them.
+    '''
+    ret = deepmerge.merge(MYYAML.load_provider(provider), MYYAML.load_action(provider, action))
     return ret

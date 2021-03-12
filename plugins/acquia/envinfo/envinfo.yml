@@ -1,0 +1,11 @@
+---
+path: /environments/ENVID
+successcode: 200
+replace:
+  - string: ENVID
+    env_var: ENVID
+verb: get
+preflight:
+  env_variables:
+    - name: ENVID
+      desc: An environment ID.

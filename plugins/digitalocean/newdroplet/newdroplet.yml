@@ -1,6 +1,7 @@
 ---
 path: /droplets
 verb: post
+successcode: 202
 body:
   - name: name
     env_var: NAME
