@@ -34,7 +34,7 @@ def find(json_string, query=None, default=None):
     match = jsonpath_expression.find(json_data)
 
     ret = []
-    for counter in range(len(match)):
+    for counter in enumerate(match):
         ret.append(match[counter].value)
 
     if ret == []:

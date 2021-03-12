@@ -1,12 +1,11 @@
 '''A multistep authenticator.'''
 
-import json
-import action
-import debug
 import os
 import sys
 import time
-import my_env
+import json
+import action
+import debug
 import my_jsonpath
 
 AUTHENTICATOR_MULTISTEP = sys.modules[__name__]
@@ -18,15 +17,15 @@ def assign(val, json_string):
       for example $.whatever, and var, for example: ID
     json: a json string
     '''
-    CANDIDATES = my_jsonpath.find(val, '$.assign', [])
+    candidates = my_jsonpath.find(val, '$.assign', [])
     # pylint: disable=W0612
-    debug.debug('assignment', CANDIDATES);
-    for key, candidate in enumerate(json.loads(CANDIDATES)):
-        ENV_VAR = candidate['var']
-        VALUE = my_jsonpath.find(json_string, candidate['jsonpath'])
+    debug.debug('assignment', candidates)
+    for key, candidate in enumerate(json.loads(candidates)):
+        env_var = candidate['var']
+        value = my_jsonpath.find(json_string, candidate['jsonpath'])
         debug.debug('assignment', 'Assigning environment variable ' +
-            ENV_VAR + ' to ' + VALUE);
-        os.environ[ENV_VAR] = VALUE
+                    env_var + ' to ' + value)
+        os.environ[env_var] = value
 
 def run(my_action):
     '''
@@ -35,22 +34,22 @@ def run(my_action):
     last = None
     for key, val in enumerate(my_action.data['steps']):
         success = False
-        MY_ACTION = action.from_provider_action(val['provider'], val['action'])
-        debug.debug('message', '===> STEP ' + str(key));
+        step_action = action.from_provider_action(val['provider'], val['action'])
+        debug.debug('message', '===> STEP ' + str(key))
         for try_number in range(val['max_wait']):
-            debug.debug('message', 'Try ' + str(try_number) + ' of ' + str(val['max_wait']));
-            JSON_STRING = MY_ACTION.run()
-            debug.debug('message', JSON_STRING);
-            last = JSON_STRING
-            CANDIDATE = my_jsonpath.find(JSON_STRING, val['jsonpath'])
-            if CANDIDATE == val['expected']:
-                debug.debug('multistep', 'Success, moving to next step');
-                AUTHENTICATOR_MULTISTEP.assign(json.dumps(val), JSON_STRING)
+            debug.debug('message', 'Try ' + str(try_number) + ' of ' + str(val['max_wait']))
+            json_string = step_action.run()
+            debug.debug('message', json_string)
+            last = json_string
+            candidate = my_jsonpath.find(json_string, val['jsonpath'])
+            if candidate == val['expected']:
+                debug.debug('multistep', 'Success, moving to next step')
+                AUTHENTICATOR_MULTISTEP.assign(json.dumps(val), json_string)
                 success = True
-                break;
-            debug.debug('multistep', 'We do not yet have the required output.');
-            debug.debug('multistep', CANDIDATE + ' != ' + val['expected']);
-            debug.debug('multistep', 'Keep going.');
+                break
+            debug.debug('multistep', 'We do not yet have the required output.')
+            debug.debug('multistep', candidate + ' != ' + val['expected'])
+            debug.debug('multistep', 'Keep going.')
             time.sleep(1)
     if success:
         debug.debug('multistep', 'Multistep action succeeded')
