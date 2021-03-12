@@ -4,7 +4,8 @@ steps:
   - provider: digitalocean
     action: newdroplet
     jsonpath: $.droplet.status
-    expected: '"new"'
+    expected:
+    - new
     max_wait: 1
     assign:
       - jsonpath: $.droplet.id
@@ -12,5 +13,6 @@ steps:
   - provider: digitalocean
     action: dropletinfo
     jsonpath: $.droplet.status
-    expected: '"active"'
+    expected:
+    - active
     max_wait: 90

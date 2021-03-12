@@ -39,5 +39,6 @@ def run(action, token=None):
         return json.dumps(True)
     print('ERROR - expected status code ' + str(expectedcode) + ' but got ')
     print(str(response.status_code))
+    print('For ' + api_url + ' with ' + verb)
     print(response.content.decode('utf-8'))
     return None

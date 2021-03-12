@@ -4,8 +4,8 @@
 #
 set -e
 
-  echo "=>"
-  echo "=> Running $1"
-  echo "=>"
-docker run --rm --entrypoint python3 \
+echo "=>"
+echo "=> Running $1"
+echo "=>"
+docker run -v "$(pwd)":/usr/src/app --rm --entrypoint python3 \
 local-dcycle-api-client-helper-image "$1"

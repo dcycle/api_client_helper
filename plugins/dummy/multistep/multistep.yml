@@ -4,20 +4,24 @@ steps:
   - provider: dummy
     action: dummy
     jsonpath: $.embedded.hello
-    expected: '"unicorns"'
-    max_wait: 90
+    expected:
+    - unicorns
+    max_wait: 5
   - provider: dummy
     action: dummy
     jsonpath: $.embedded.hello
-    expected: '"unicorns"'
-    max_wait: 90
+    expected:
+    - unicorns
+    max_wait: 5
   - provider: dummy
     action: dummy
     jsonpath: $.embedded.hello
-    expected: '"unicorns"'
-    max_wait: 90
+    expected:
+    - unicorns
+    max_wait: 5
   - provider: dummy
     action: dummy
     jsonpath: $.embedded.hello
-    expected: '"unicorns"'
-    max_wait: 90
+    expected:
+    - unicorns
+    max_wait: 5

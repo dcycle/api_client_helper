@@ -13,16 +13,17 @@ AUTHENTICATOR_MULTISTEP = sys.modules[__name__]
 def assign(val, json_string):
     '''
     Set an environment variable if possible.
-    val: dict having possible key assign, which itself has key jsonpath,
+    val: json of dict having possible key assign, which itself has an array,
+      each item having key jsonpath,
       for example $.whatever, and var, for example: ID
     json: a json string
     '''
-    candidates = my_jsonpath.find(val, '$.assign', [])
+    candidates = my_jsonpath.find(val, '$.assign', [], True)
     # pylint: disable=W0612
     debug.debug('assignment', candidates)
     for key, candidate in enumerate(json.loads(candidates)):
         env_var = candidate['var']
-        value = my_jsonpath.find(json_string, candidate['jsonpath'])
+        value = my_jsonpath.find(json_string, candidate['jsonpath'], None, True)
         debug.debug('assignment', 'Assigning environment variable ' +
                     env_var + ' to ' + value)
         os.environ[env_var] = value
@@ -42,13 +43,13 @@ def run(my_action):
             debug.debug('message', json_string)
             last = json_string
             candidate = my_jsonpath.find(json_string, val['jsonpath'])
-            if candidate == val['expected']:
+            if candidate == json.dumps(val['expected']):
                 debug.debug('multistep', 'Success, moving to next step')
                 AUTHENTICATOR_MULTISTEP.assign(json.dumps(val), json_string)
                 success = True
                 break
             debug.debug('multistep', 'We do not yet have the required output.')
-            debug.debug('multistep', candidate + ' != ' + val['expected'])
+            debug.debug('multistep', candidate + ' != ' + json.dumps(val['expected']))
             debug.debug('multistep', 'Keep going.')
             time.sleep(1)
     if success:

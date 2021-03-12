@@ -52,7 +52,15 @@ You can use Jsonpath syntax to get only part of the response, like this:
     docker run --rm dcycle/api_client_helper:1 dummy dummy \
       --jsonpath=$.embedded.hello
 
-    "unicorns"
+    ["unicorns"]
+
+To get the first item in an array:
+
+    docker run --rm dcycle/api_client_helper:1 dummy dummy \
+      --jsonpath=$.embedded.hello \
+      --jsondecodefirst=1
+
+    unicorns
 
 A real-world example
 -----
@@ -85,7 +93,9 @@ To create a new DigitalOcean droplet (virtual machine):
 
     {"droplet": {"id": 236335349, "name": "some-new-droplet", "memory": 8192, "vcpus": 4.....
 
-This will create a new droplet with ID 236335349 (in this example), but it will not yet be available for use. That might take up to a minute; we need to poll the dropletinfo API endpoint until it's ready ("active", not "new"):
+This will create a new droplet with ID 236335349 (in this example), but it will not yet be available for use. That might take up to a minute; we need to poll the dropletinfo API endpoint until it's ready ("active", not "new").
+
+**Here is how to do it manually; read on for an automated way to have the script do it for you.**
 
 Assuming your TOKEN environment variable is still set, you can get information about your droplet by running:
 
@@ -101,9 +111,10 @@ This will give you a lot of information; but what we are looking for is the acti
       --env TOKEN="$TOKEN" \
       --env ID="$ID" \
       dcycle/api_client_helper:1 digitalocean dropletinfo \
-      --jsonpath=$.droplet.status
+      --jsonpath=$.droplet.status \
+      --jsondecodefirst=1
 
-    "active"
+    active
 
 We will call this a multi-step request:
 
@@ -119,8 +130,9 @@ Start by running the same pip3 install commands as in the `Dockerfile`.
 
 Then:
 
+    sudo pip3 install requests pyyaml deepmerge jsonpath-ng
     export TOKEN=my-api-token
-    python3 ./vm.py --provider digitalocean --action create
+    python3 ./api_client_helper.py dummy dummy
 
 Multi-step Requests
 -----
@@ -131,7 +143,7 @@ Coming back to our "create a Droplet" example, above, several APIs have this beh
 * Keep polling the API every second until the request is fulfilled
 * Fail after a minute or so
 
-You can define your own multi-step requests, with an example:
+You can define your own multi-step requests. This script provides a dummy example:
 
     docker run --rm dcycle/api_client_helper:1 dummy multistep
 
@@ -181,7 +193,7 @@ We ship with a multistep "create a DigitalOcean Droplet" action, which you can r
     NAME=some-new-droplet
     IMAGE=docker-18-04
     SSH_FINGERPRINT=a1:b2:c3:d4:a1:b2:c3:d4:a1:b2:c3:d4:a1:b2:c3:d4
-    docker run --rm \
+    time docker run --rm \
       --env DEBUG="1" \
       --env TOKEN="$TOKEN" \
       --env LOCATION="$LOCATION" \
@@ -240,12 +252,12 @@ However, if you just want to print the word "unicorns", you can use the jsonpath
     docker run --rm dcycle/api_client_helper:1 dummy dummy --jsonpath=$.embedded.hello
     "unicorns"
 
-You can use `--jsondecode=1` to decode the json (in this case remove the quotes from the word "unicorn"):
+You can use `--jsondecodefirst=1` to decode the json (in this case remove the quotes from the word "unicorn"):
 
-    docker run --rm dcycle/api_client_helper:1 dummy dummy --jsonpath=$.embedded.hello --jsondecode=1
+    docker run --rm dcycle/api_client_helper:1 dummy dummy --jsonpath=$.embedded.hello --jsondecodefirst=1
     unicorns
 
-(If you use `--jsondecode=1` with an object, you will end up with a non-json string which is not of much use.)
+(If you use `--jsondecodefirst=1` with an object, you will end up with a non-json string which is not of much use.)
 
 More Json and Jsonpath examples
 -----
@@ -275,14 +287,14 @@ Let's say I want to get the string "world", I need to _filter_ the response of "
     docker run --rm dcycle/api_client_helper:1 \
       dummy jsonpath_example \
       --jsonpath='$.hello[?(@.valid=1)].response' \
-      --jsondecode=1
+      --jsondecodefirst=1
 
 This will output "world".
 
     docker run --rm dcycle/api_client_helper:1 \
       dummy jsonpath_example \
       --jsonpath='$.hello[?(@.valid=0)].response' \
-      --jsondecode=1
+      --jsondecodefirst=1
 
 Debugging
 -----
@@ -299,6 +311,6 @@ Local deveolopment
 Share the volument using `-v $(pwd):/usr/src/app`:
 
 TOKEN=my-api-token
-docker run -v $(pwd):/usr/src/app --rm \
+docker run -v "$(pwd)":/usr/src/app --rm \
   --env TOKEN="$TOKEN" \
   dcycle/api_client_helper:1 digitalocean accountinfo

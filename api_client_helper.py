@@ -13,7 +13,7 @@ PARSER.add_argument('--selftest', default=0,
                     help='Use 1 to ignore other arguments and self-test the' +
                     'code (default: 0)')
 PARSER.add_argument('--jsonpath', default="$", help='Jsonpath (default = $)')
-PARSER.add_argument('--jsondecode', default=0,
+PARSER.add_argument('--jsondecodefirst', default=0,
                     help='Use 1 to print the decoded version of the json' + 'string')
 PARSER.add_argument('--debug', default=0,
                     help='Use 1 to print debug information (default: 0)')
@@ -30,7 +30,7 @@ else:
     import json
     import my_jsonpath
     CANDIDATE = my_jsonpath.find(JSON_STRING, getattr(ARGS, 'jsonpath'))
-    if getattr(ARGS, 'jsondecode'):
-        print(json.loads(CANDIDATE))
+    if getattr(ARGS, 'jsondecodefirst'):
+        print(json.loads(CANDIDATE)[0])
     else:
         print(CANDIDATE)
