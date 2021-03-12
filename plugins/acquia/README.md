@@ -1,3 +1,6 @@
+Acquia API
+=====
+
 To get your Acquia account info:
 
     KEY=my-api-key

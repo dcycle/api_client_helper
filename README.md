@@ -277,7 +277,10 @@ Let's say I want to get the string "world", I need to _filter_ the response of "
 
 This will output "world".
 
-You can also
+    docker run --rm dcycle/api_client_helper:1 \
+      dummy jsonpath_example \
+      --jsonpath='$.hello[?(@.valid=0)].response' \
+      --jsondecode=1
 
 Debugging
 -----
