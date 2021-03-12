@@ -1,6 +1,8 @@
 API Client Helper
 =====
 
+[![CircleCI](https://circleci.com/gh/dcycle/api_client_helper/tree/master.svg?style=svg)](https://circleci.com/gh/dcycle/api_client_helper/tree/master)
+
 Interact with various APIs in Python.
 
 This project currently has plugins for
