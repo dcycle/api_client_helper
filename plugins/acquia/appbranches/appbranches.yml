@@ -1,0 +1,11 @@
+---
+path: /applications/APP/code
+successcode: 200
+replace:
+  - string: APP
+    env_var: APP
+verb: get
+preflight:
+  env_variables:
+    - name: APP
+      desc: An application uuid.

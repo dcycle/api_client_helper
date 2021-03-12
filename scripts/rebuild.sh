@@ -19,19 +19,19 @@ fi
 ./test.sh
 
 PROJECT=api_client_helper
-DATE=`date '+%Y-%m-%d-%H-%M-%S-%Z'`
+DATE=$(date '+%Y-%m-%d-%H-%M-%S-%Z')
 MAJORVERSION='1'
 VERSION='1.0'
 
 # Start by getting the latest version of the official base image
 docker pull python:3
 # Rebuild the entire thing
-docker build --no-cache -t dcycle/"$PROJECT":"$VERSION" .
-docker build -t dcycle/"$PROJECT":"$MAJORVERSION" .
-docker build -t dcycle/"$PROJECT":"$MAJORVERSION".$DATE .
-docker build -t dcycle/"$PROJECT":"$VERSION".$DATE .
+docker build --no-cache -t dcycle/"$PROJECT:$VERSION" .
+docker build -t dcycle/"$PROJECT:$MAJORVERSION" .
+docker build -t dcycle/"$PROJECT:$MAJORVERSION.$DATE" .
+docker build -t dcycle/"$PROJECT:$VERSION.$DATE" .
 docker login -u"$DOCKERHUBUSER" -p"$DOCKERHUBPASS"
-docker push dcycle/"$PROJECT":"$VERSION"
-docker push dcycle/"$PROJECT":"$MAJORVERSION"
-docker push dcycle/"$PROJECT":"$VERSION"."$DATE"
-docker push dcycle/"$PROJECT":"$MAJORVERSION"."$DATE"
+docker push dcycle/"$PROJECT:$VERSION"
+docker push dcycle/"$PROJECT:$MAJORVERSION"
+docker push dcycle/"$PROJECT:$VERSION.$DATE"
+docker push dcycle/"$PROJECT:$MAJORVERSION.$DATE"

@@ -1,11 +1,15 @@
-'''Interact with one provider, performing an action on it.'''
+'''A header-bearer type authenticator.'''
 
-import my_env
-import requests
 import json
+# pylint: disable=E0401
+import requests
+import my_env
 
-def run(action, token = None):
-    if (token == None):
+def run(action, token=None):
+    '''
+    Run an action on a header-bearer type provider.
+    '''
+    if token is None:
         token = my_env.get('TOKEN')
 
     headers = {
@@ -17,11 +21,11 @@ def run(action, token = None):
     body = action.body()
     verb = action.verb()
 
-    if (verb == 'get'):
+    if verb == 'get':
         response = requests.get(api_url, headers=headers, json=body)
-    elif (verb == 'post'):
+    elif verb == 'post':
         response = requests.post(api_url, headers=headers, json=body)
-    elif (verb == 'delete'):
+    elif verb == 'delete':
         response = requests.delete(api_url, headers=headers, json=body)
     else:
         raise Exception('Unknow verb ' + verb)
@@ -29,15 +33,11 @@ def run(action, token = None):
     expectedcode = action.successcode()
 
     if response.status_code == expectedcode:
-        if (action.expectingContent()):
+        if action.expecting_content():
             ret = response.content.decode('utf-8')
-            print('returning ' + ret)
-            print(34)
             return ret
-        else:
-            print('Success')
-            return json.encode(true)
-    else:
-        print('ERROR - expected status code ' + str(expectedcode) + ' but got ' + str(response.status_code))
-        print(json.loads(response.content.decode('utf-8')))
-        return None
+        return json.dumps(True)
+    print('ERROR - expected status code ' + str(expectedcode) + ' but got ')
+    print(str(response.status_code))
+    print(response.content.decode('utf-8'))
+    return None

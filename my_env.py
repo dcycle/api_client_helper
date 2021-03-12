@@ -1,7 +1,7 @@
 '''Get environment variables and raise exception if they are not defined.'''
 import os
 
-def get(var, desc = ""):
+def get(var, desc=""):
     '''Get an environment variable, raise exception if it is not defined'''
     candidate = os.getenv(var)
     if candidate is None:
@@ -9,7 +9,7 @@ def get(var, desc = ""):
         before calling the script: export {var}=whatever""")
     return candidate
 
-def getOrDefault(var, default):
+def get_or_default(var, default):
     '''Get an environment variable, raise exception if it is not defined'''
     candidate = os.getenv(var)
     if candidate is None:

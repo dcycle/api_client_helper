@@ -1,0 +1,16 @@
+---
+authenticator: multistep
+steps:
+  - provider: digitalocean
+    action: newdroplet
+    jsonpath: $.droplet.status
+    expected: '"new"'
+    max_wait: 1
+    assign:
+      - jsonpath: $.droplet.id
+        var: ID
+  - provider: digitalocean
+    action: dropletinfo
+    jsonpath: $.droplet.status
+    expected: '"active"'
+    max_wait: 90

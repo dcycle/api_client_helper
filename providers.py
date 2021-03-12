@@ -1,10 +1,12 @@
-'''Get all providers.'''
+'''
+Get all providers.
+'''
 
 import os
 import sys
-providers = sys.modules[__name__]
+PROVIDERS = sys.modules[__name__]
 
-def all():
+def all_providers():
     '''Get all providers.'''
     candidate = os.listdir(os.getcwd() + '/plugins')
     candidate.remove('README.md')
@@ -12,4 +14,4 @@ def all():
 
 def comma_separated():
     '''Get all providers as a comma-separated string.'''
-    return ', '.join(providers.all())
+    return ', '.join(PROVIDERS.all_providers())
