@@ -1,6 +1,8 @@
 Acquia API
 =====
 
+**Acquia API is a work in progress and has not been fully tested**
+
 To get your Acquia account info:
 
     KEY=my-api-key

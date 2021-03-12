@@ -204,6 +204,15 @@ We ship with a multistep "create a DigitalOcean Droplet" action, which you can r
       dcycle/api_client_helper:1 digitalocean newdroplet_and_wait \
       --jsonpath='$.droplet.networks.v4[?(@.type = "public")].ip_address'
 
+    [DEBUG] A bunch of debug messages...
+    ["1.2.3.4"]
+
+    real	0m35.167s
+    user	0m0.130s
+    sys	0m0.062s
+
+Run it witout `--env DEBUG="1"` and with `--jsondecodefirst=1` to get just the IP address.
+
 More DigitalOcean requests can be found in `./plugins/digitalocean/README.md`.
 
 Errors
