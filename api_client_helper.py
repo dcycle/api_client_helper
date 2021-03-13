@@ -1,5 +1,6 @@
 '''Interact with APIs as a client.'''
 
+import sys
 import argparse
 import providers
 
@@ -27,6 +28,9 @@ if getattr(ARGS, 'selftest'):
 else:
     import action
     JSON_STRING = action.from_provider_action(ARGS.provider, ARGS.action).run()
+    if JSON_STRING is None:
+        print('Could not complete the request. Please run with --DEBUG=1 for details.')
+        sys.exit(1)
     import json
     import my_jsonpath
     CANDIDATE = my_jsonpath.find(JSON_STRING, getattr(ARGS, 'jsonpath'))

@@ -1,0 +1,8 @@
+---
+response:
+- id: 123
+  name: hello
+- id: 234
+  name: world
+- id: 456
+  name: hello

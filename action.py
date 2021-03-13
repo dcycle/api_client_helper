@@ -1,5 +1,6 @@
 '''Interact with one provider, performing an action on it.'''
 
+import json
 import myyaml
 import authenticator
 import my_env
@@ -54,11 +55,17 @@ class Action:
         '''
         Get the path of the action, for example /api/v2/whatever.
         '''
-        candidate = self.data['path']
+        return self.get_data_with_replacements('path', '/')
+    def get_data_with_replacements(self, key, default):
+        '''
+        Get data, replacing certain strings as per the YML file. For example,
+        see ./plugins/digitalocean/dropletinfo/dropletinfo.yml.
+        '''
+        candidate = json.dumps(self.get_data(key, default))
         # pylint: disable=W0612
-        for key, val in enumerate(self.get_data('replace', {})):
+        for key2, val in enumerate(self.get_data('replace', {})):
             candidate = candidate.replace(val['string'], my_env.get(val['env_var']))
-        return candidate
+        return json.loads(candidate)
     def base(self):
         '''
         Get the base URL of the provider, for example https://example.com.

@@ -1,0 +1,6 @@
+---
+replace:
+- string: _ID_
+  env_var: ID
+response:
+  response: "Mock deleted mock ID _ID_"

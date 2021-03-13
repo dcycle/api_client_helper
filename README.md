@@ -215,6 +215,53 @@ Run it witout `--env DEBUG="1"` and with `--jsondecodefirst=1` to get just the I
 
 More DigitalOcean requests can be found in `./plugins/digitalocean/README.md`.
 
+Another multistep example
+-----
+
+Let's say you have an API request which returns:
+
+    [
+      {
+        "id": "123",
+        "name": "hello"
+      },
+      {
+        "id": "234",
+        "name": "world"
+      },
+      {
+        "id": "456",
+        "name": "hello"
+      },
+    ]
+
+And another request where you can _delete_ any item by ID.
+
+And you would like to delete all items with "hello".
+
+You can find mock actions to list, and to delete (we'll see later on how to combine them in a multistep action):
+
+    docker run --rm dcycle/api_client_helper:1 dummy mock_list
+
+    [[{"id": 123, "name": "hello"}, {"id": 234, "name": "world"}, {"id": 456, "name": "hello"}]]
+
+    docker run --rm \
+      --env ID="456" \
+      dcycle/api_client_helper:1 dummy mock_delete
+
+    [{"response": "Mock deleted mock ID 456"}]
+
+Take a look now at our mock multistep action to mock-delete _the first_ item with the name "hello", which is defined in `./plugins/dummy/mock_delete_all_by_name`.
+
+    NAME=hello
+    docker run --rm \
+      --env NAME="$NAME" \
+      dcycle/api_client_helper:1 dummy mock_delete_all_by_name
+
+    [{"response": "Mock deleted mock ID 123"}]
+
+The system does not currently allow deleting all items with the name "hello" (for example) with a single multistep action.
+
 Errors
 -----
 
