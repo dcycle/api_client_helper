@@ -1,0 +1,20 @@
+---
+authenticator: multistep
+steps:
+- provider: dummy
+  action: mock_list
+  assign:
+  - jsonpath: "$[?(@.name='NAME')].id"
+    var: ID
+    replace:
+    - string: NAME
+      env_var: NAME
+- provider: dummy
+  action: mock_delete
+replace:
+- string: NAME
+  env_var: NAME
+preflight:
+  env_variables:
+  - name: NAME
+    desc: A name such as hello

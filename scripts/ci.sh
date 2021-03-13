@@ -45,5 +45,22 @@ docker run --rm \
   --jsonpath='$.hello[?(@.valid=1)].response' \
   --jsondecodefirst=1
 echo "=>"
+echo "=> Testing with dummy mock_list"
+echo "=>"
+docker run --rm dcycle/api_client_helper:1 dummy mock_list
+echo "=>"
+echo "=> Testing with dummy mock_delete"
+echo "=>"
+docker run --rm \
+  --env ID="456" \
+  dcycle/api_client_helper:1 dummy mock_delete
+NAME=hello
+echo "=>"
+echo "=> Testing with dummy mock_delete_all_by_name"
+echo "=>"
+docker run --rm \
+  --env NAME="$NAME" \
+  dcycle/api_client_helper:1 dummy mock_delete_all_by_name
+echo "=>"
 echo "=> All tests passing!"
 echo "=>"
