@@ -1,10 +1,10 @@
 '''Interact with one provider, performing an action on it.'''
 
+import json
 import myyaml
 import authenticator
 import my_env
 import debug
-import json
 
 class Action:
     '''
@@ -63,7 +63,7 @@ class Action:
         '''
         candidate = json.dumps(self.get_data(key, default))
         # pylint: disable=W0612
-        for key, val in enumerate(self.get_data('replace', {})):
+        for key2, val in enumerate(self.get_data('replace', {})):
             candidate = candidate.replace(val['string'], my_env.get(val['env_var']))
         return json.loads(candidate)
     def base(self):

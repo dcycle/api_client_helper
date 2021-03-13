@@ -8,4 +8,4 @@ def run(my_action):
     Actions whose provider is "dummy" must define a response in their
     YML files. See for example ./plugins/dummy/dummy/dummy.yml.
     '''
-    return json.dumps(my_action.get_data_with_replacements('response',None))
+    return json.dumps(my_action.get_data_with_replacements('response', None))
