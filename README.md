@@ -251,12 +251,16 @@ You can find mock actions to list, and to delete (we'll see later on how to comb
 
     [{"response": "Mock deleted mock ID 456"}]
 
-Take a look now at our mock multistep action to mock-delete all items with the name "hello", which is defined in `./plugins/dummy/mock_delete_all_by_name`.
+Take a look now at our mock multistep action to mock-delete _the first_ item with the name "hello", which is defined in `./plugins/dummy/mock_delete_all_by_name`.
 
     NAME=hello
     docker run --rm \
       --env NAME="$NAME" \
       dcycle/api_client_helper:1 dummy mock_delete_all_by_name
+
+    [{"response": "Mock deleted mock ID 123"}]
+
+The system does not currently allow deleting all items with the name "hello" (for example) with a single multistep action.
 
 Errors
 -----
