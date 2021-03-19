@@ -16,7 +16,7 @@ else
   source "$CREDENTIALS";
 fi
 
-./test.sh
+./scripts/ci.sh
 
 PROJECT=api_client_helper
 DATE=$(date '+%Y-%m-%d-%H-%M-%S-%Z')
