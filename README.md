@@ -1,5 +1,3 @@
-** AS OF 2023-06-26 THIS PROJECT IS DEPRECATED **
-
 API Client Helper
 =====
 
