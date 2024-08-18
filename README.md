@@ -1,6 +1,8 @@
 API Client Helper
 =====
 
+*This project is experimental; and not actively maintained. It may work, but no support will be provided.*
+
 [![CircleCI](https://circleci.com/gh/dcycle/api_client_helper/tree/master.svg?style=svg)](https://circleci.com/gh/dcycle/api_client_helper/tree/master)
 
 Interact with various APIs in Python.
